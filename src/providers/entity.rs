@@ -1,7 +1,7 @@
 use anyhow::Result;
 use ecow::eco_format;
 use hitman_bin1::{
-	de::deserialize,
+	deserialize,
 	game::h3::{
 		SEntityTemplatePinConnection, SEntityTemplateReference, SMatrix43, STemplateEntityBlueprint,
 		STemplateEntityFactory, SVector3, ZVariant

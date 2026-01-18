@@ -672,7 +672,7 @@ struct DiffRowProps<'a> {
 	id: RuntimeResourceID,
 	diff: ResourceDiff,
 
-	clicked: Handler<'static, ()>
+	clicked: HandlerMut<'static, ()>
 }
 
 #[component]
