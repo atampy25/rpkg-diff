@@ -201,7 +201,7 @@ fn diff_resources(
 	second_rpkg: &ResourcePackage,
 	resources: EitherOrBoth<&ResourceInfo, &ResourceInfo>
 ) -> Result<ResourceDiff> {
-	let is_vanilla = |res: &ResourceInfo| {
+	let is_vanilla = |rpkg: &ResourcePackage, res: &ResourceInfo| {
 		if let Some(vanilla_files) = vanilla_files {
 			if let Some(p) = vanilla_files.partitions_with_resource(res.rrid()).first().cloned() {
 				let partition = vanilla_files.find_partition(p).context("No such partition")?;
@@ -217,7 +217,7 @@ fn diff_resources(
 					.context("Reading resource from vanilla partition")?;
 
 				let second_meta = ResourceMetadata::try_from(res)?;
-				let second_data = first_rpkg.read_resource(res.rrid())?;
+				let second_data = rpkg.read_resource(res.rrid())?;
 
 				anyhow::Ok(diff(&first_meta, &first_data, &second_meta, &second_data)? == ResourceDiff::Same)
 			} else {
@@ -239,11 +239,11 @@ fn diff_resources(
 		}
 
 		EitherOrBoth::Left(res) => ResourceDiff::OnlyInFirst {
-			is_vanilla: is_vanilla(res)?
+			is_vanilla: is_vanilla(first_rpkg, res)?
 		},
 
 		EitherOrBoth::Right(res) => ResourceDiff::OnlyInSecond {
-			is_vanilla: is_vanilla(res)?
+			is_vanilla: is_vanilla(second_rpkg, res)?
 		}
 	}
 }
