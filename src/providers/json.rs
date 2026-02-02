@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
 use anyhow::Result;
-use ecow::eco_format;
+use ecow::{EcoString, eco_format};
+use hitman_bin1::{deserialize, game::h3::SBlobsConfigResourceEntry};
 use hitman_commons::metadata::ResourceMetadata;
-use hitman_formats::ores::{parse_hashes_ores, parse_json_ores};
 use serde_json::Value;
 use tryvial::try_fn;
 
@@ -99,8 +99,8 @@ impl DiffProvider for ORESDiff {
 		second_data: &[u8]
 	) -> Result<ResourceDiff> {
 		if first_meta.id.to_hash() == "0057C2C3941115CA" {
-			let first_data = parse_json_ores(first_data)?;
-			let second_data = parse_json_ores(second_data)?;
+			let first_data = deserialize::<EcoString>(first_data)?;
+			let second_data = deserialize::<EcoString>(second_data)?;
 
 			let first_data = serde_json::from_str::<Vec<Value>>(&first_data)?;
 			let first_data = first_data
@@ -155,27 +155,27 @@ impl DiffProvider for ORESDiff {
 				ResourceDiff::Same
 			}
 		} else {
-			let first_data = parse_hashes_ores(first_data)?;
-			let second_data = parse_hashes_ores(second_data)?;
+			let first_data = deserialize::<Vec<SBlobsConfigResourceEntry>>(first_data)?;
+			let second_data = deserialize::<Vec<SBlobsConfigResourceEntry>>(second_data)?;
 
 			if first_data != second_data {
 				ResourceDiff::Different {
 					description: {
 						first_data
-							.keys()
-							.find(|k| !second_data.contains_key(*k))
-							.map(|k| eco_format!("Entry {} only in first", k))
+							.iter()
+							.find(|x| !second_data.iter().any(|y| x.id == y.id))
+							.map(|x| eco_format!("Entry {} only in first", x.id))
 							.or_else(|| {
 								second_data
-									.keys()
-									.find(|k| !first_data.contains_key(*k))
-									.map(|k| eco_format!("Entry {} only in second", k))
+									.iter()
+									.find(|x| !first_data.iter().any(|y| x.id == y.id))
+									.map(|x| eco_format!("Entry {} only in second", x.id))
 							})
 							.or_else(|| {
 								first_data
 									.iter()
-									.find(|(k, v)| second_data.get(*k) != Some(v))
-									.map(|(k, _)| eco_format!("Entry {} is different", k))
+									.find(|x| !second_data.iter().any(|y| x.id == y.id))
+									.map(|x| eco_format!("Entry {} is different", x.id))
 							})
 					}
 				}
@@ -190,9 +190,9 @@ impl DiffProvider for ORESDiff {
 		vec![(
 			format!("{}.{}.json", meta.id.to_hash(), meta.resource_type),
 			if meta.id.to_hash() == "0057C2C3941115CA" {
-				parse_json_ores(data)?.into_bytes()
+				deserialize::<EcoString>(data)?.as_bytes().into()
 			} else {
-				serde_json::to_vec_pretty(&parse_hashes_ores(data)?)?
+				serde_json::to_vec_pretty(&deserialize::<Vec<SBlobsConfigResourceEntry>>(data)?)?
 			}
 		)]
 	}

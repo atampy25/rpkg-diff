@@ -20,6 +20,7 @@ hitman-bin1 = { git = "https://github.com/atampy25/hitman-bin1", features = [
     "h3",
     "TEMP",
     "TBLU",
+    "ORES"
 ] }
 serde_json = "1.0.145"
 glacier-texture = "1.1.0"
