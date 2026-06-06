@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
 use anyhow::Result;
-use ecow::{EcoString, eco_format};
-use hitman_bin1::{deserialize, game::h3::SBlobsConfigResourceEntry};
+use ecow::{eco_format, EcoString};
+use glacier_bin1::{deserialize, game::h3::SBlobsConfigResourceEntry};
 use hitman_commons::metadata::ResourceMetadata;
 use serde_json::Value;
 use tryvial::try_fn;

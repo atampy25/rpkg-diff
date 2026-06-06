@@ -1,6 +1,6 @@
 use anyhow::Result;
 use ecow::eco_format;
-use hitman_bin1::{
+use glacier_bin1::{
 	deserialize,
 	game::h3::{
 		SEntityTemplatePinConnection, SEntityTemplateReference, SMatrix43, STemplateEntityBlueprint,
