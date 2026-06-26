@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
-use glacier_texture::{WoaVersion, convert::create_dds, mipblock::MipblockData, texture_map::TextureMap};
-use hitman_commons::metadata::ResourceMetadata;
+use glacier_commons::metadata::ResourceMetadata;
+use glacier_texture::{GlacierGame, convert::create_dds, mipblock::MipblockData, texture_map::TextureMap};
 use tryvial::try_fn;
 
 use crate::providers::{DiffProvider, ResourceDiff};
@@ -22,8 +22,8 @@ impl DiffProvider for TEXTDiff {
 		second_meta: &ResourceMetadata,
 		second_data: &[u8]
 	) -> Result<ResourceDiff> {
-		let first_data = TextureMap::from_memory(first_data, WoaVersion::HM3).context("Parsing first TEXT")?;
-		let second_data = TextureMap::from_memory(second_data, WoaVersion::HM3).context("Parsing second TEXT")?;
+		let first_data = TextureMap::from_memory(first_data, GlacierGame::HM3).context("Parsing first TEXT")?;
+		let second_data = TextureMap::from_memory(second_data, GlacierGame::HM3).context("Parsing second TEXT")?;
 
 		if first_data.mipmaps().next().is_some_and(|x| x.is_ok())
 			&& second_data.mipmaps().next().is_some_and(|x| x.is_ok())
@@ -58,7 +58,7 @@ impl DiffProvider for TEXTDiff {
 	fn extract(&self, meta: &ResourceMetadata, data: &[u8]) -> Result<Vec<(String, Vec<u8>)>> {
 		vec![(
 			format!("{}.{}.dds", meta.id.to_hash(), meta.resource_type),
-			create_dds(&TextureMap::from_memory(data, WoaVersion::HM3)?)?
+			create_dds(&TextureMap::from_memory(data, GlacierGame::HM3)?)?
 		)]
 	}
 }
@@ -80,10 +80,10 @@ impl DiffProvider for TEXDDiff {
 		_: &ResourceMetadata,
 		second_data: &[u8]
 	) -> Result<ResourceDiff> {
-		let first_data = MipblockData::from_memory(first_data, WoaVersion::HM3).context("Parsing first TEXD")?;
-		let second_data = MipblockData::from_memory(second_data, WoaVersion::HM3).context("Parsing second TEXD")?;
+		let first_data = MipblockData::from_memory(first_data, GlacierGame::HM3).context("Parsing first TEXD")?;
+		let second_data = MipblockData::from_memory(second_data, GlacierGame::HM3).context("Parsing second TEXD")?;
 
-		if first_data.pack_to_vec(WoaVersion::HM3)? != second_data.pack_to_vec(WoaVersion::HM3)? {
+		if first_data.pack_to_vec(GlacierGame::HM3)? != second_data.pack_to_vec(GlacierGame::HM3)? {
 			ResourceDiff::Different {
 				description: Some("Mipblock data is different".into())
 			}

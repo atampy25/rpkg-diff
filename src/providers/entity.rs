@@ -8,7 +8,7 @@ use glacier_bin1::{
 	},
 	types::resource::ZRuntimeResourceID
 };
-use hitman_commons::metadata::ResourceMetadata;
+use glacier_commons::metadata::ResourceMetadata;
 use tryvial::try_fn;
 
 use crate::providers::{DiffProvider, ResourceDiff};

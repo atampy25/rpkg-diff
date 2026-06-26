@@ -1,8 +1,8 @@
 use std::io::{Cursor, Read};
 
 use anyhow::{Result, bail};
-use hitman_commons::metadata::ResourceMetadata;
-use hitman_formats::material::{MaterialError, MaterialInstance, MaterialOverride};
+use glacier_commons::metadata::ResourceMetadata;
+use glacier_formats::material::{MaterialError, MaterialInstance, MaterialOverride};
 use serde_json::to_vec_pretty;
 use tryvial::try_fn;
 

@@ -1,6 +1,6 @@
 use anyhow::Result;
 use ecow::EcoString;
-use hitman_commons::metadata::ResourceMetadata;
+use glacier_commons::metadata::ResourceMetadata;
 
 pub mod entity;
 pub mod json;
@@ -89,7 +89,7 @@ pub fn diff(
 ) -> Result<ResourceDiff> {
 	for provider in inventory::iter::<&dyn DiffProvider> {
 		if first_meta.resource_type == provider.resource_type() {
-			return provider.diff(&first_meta, &first_data, &second_meta, &second_data);
+			return provider.diff(first_meta, first_data, second_meta, second_data);
 		}
 	}
 

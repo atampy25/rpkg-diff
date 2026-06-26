@@ -1,5 +1,4 @@
 use std::{
-	env,
 	fs::{self, File},
 	path::{Path, PathBuf},
 	process,
@@ -11,7 +10,7 @@ use clap::{CommandFactory, Parser};
 use clap_complete::Shell;
 use compress_tools::{ArchiveContents, ArchiveIteratorBuilder};
 use fn_error_context::context;
-use hitman_commons::{
+use glacier_commons::{
 	hash_list::HASH_LIST,
 	metadata::{ResourceMetadata, RuntimeID},
 	rpkg_tool::RpkgResourceMeta
@@ -19,9 +18,12 @@ use hitman_commons::{
 use iocraft::prelude::*;
 use itertools::{EitherOrBoth, Itertools};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
-use rpkg_rs::resource::{
-	partition_manager::PartitionManager, pdefs::PackageDefinitionSource, resource_info::ResourceInfo,
-	resource_package::ResourcePackage, runtime_resource_id::RuntimeResourceID
+use rpkg_rs::{
+	GlacierGame, WoaGame,
+	resource::{
+		partition_manager::PartitionManager, pdefs::PackageDefinitionSource, resource_info::ResourceInfo,
+		resource_package::ResourcePackage, runtime_resource_id::RuntimeResourceID
+	}
 };
 use tryvial::try_fn;
 
@@ -101,25 +103,21 @@ async fn main() -> Result<()> {
 		process::exit(exitcode::USAGE);
 	};
 
-	let hash_list_path = env::current_exe()?.with_file_name("hash_list.sml");
-	if hash_list_path.exists() {
-		eprintln!("Loading hash list");
-		HASH_LIST
-			.load_compressed(&fs::read(hash_list_path).context("Reading hash list")?)
-			.context("Loading hash list")?;
-	} else {
-		eprintln!(
-			"No hash list available, download and place it next to the executable as hash_list.sml to see paths/hints"
-		);
-	}
+	HASH_LIST.load_latest().await?;
 
 	eprintln!("Parsing first RPKG file from {}", args.first.display());
 	let (first_name, first) = read_rpkg(&args.first, args.first_filter).context("Reading first RPKG")?;
-	let first = Arc::new(ResourcePackage::from_memory(first, !args.base).context("Parsing first RPKG")?);
+	let first = Arc::new(
+		ResourcePackage::from_memory(first, !args.base, GlacierGame::Woa(WoaGame::HM3))
+			.context("Parsing first RPKG")?
+	);
 
 	eprintln!("Parsing second RPKG file from {}", args.second.display());
 	let (second_name, second) = read_rpkg(&args.second, args.second_filter).context("Reading second RPKG")?;
-	let second = Arc::new(ResourcePackage::from_memory(second, !args.base).context("Parsing second RPKG")?);
+	let second = Arc::new(
+		ResourcePackage::from_memory(second, !args.base, GlacierGame::Woa(WoaGame::HM3))
+			.context("Parsing second RPKG")?
+	);
 
 	let vanilla_files = if let Some(vanilla_runtime) = args.vanilla_runtime {
 		eprintln!("Loading vanilla runtime from {}", vanilla_runtime.display());
@@ -133,9 +131,12 @@ async fn main() -> Result<()> {
 			partition.set_max_patch_level(9);
 		}
 
-		let mut partition_manager =
-			PartitionManager::new(vanilla_runtime, &PackageDefinitionSource::Custom(partitions))
-				.context("Creating partition manager")?;
+		let mut partition_manager = PartitionManager::new(
+			vanilla_runtime,
+			GlacierGame::Woa(WoaGame::HM3),
+			&PackageDefinitionSource::Custom(partitions)
+		)
+		.context("Creating partition manager")?;
 
 		partition_manager
 			.mount_partitions(|_, _| {})
